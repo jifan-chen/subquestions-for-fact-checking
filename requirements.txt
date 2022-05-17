@@ -1,0 +1,5 @@
+tqdm
+pandas
+beautifulsoup4
+argparse
+requests

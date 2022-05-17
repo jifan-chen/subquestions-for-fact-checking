@@ -2,7 +2,7 @@
 
 This repository contains the data and code for the baseline described in the following paper:
 
-> [**Generating Literal and Implied Subquestions to Fact-check Complex Claims**]()<br/>
+> [**Generating Literal and Implied Subquestions to Fact-check Complex Claims**](https://arxiv.org/pdf/2205.06938.pdf)<br/>
 > Jifan chen, Aniruddh Sriram, Eunsol Choi, Greg Durrett<br/>
 > arxiv preprint
 ```
@@ -59,7 +59,8 @@ The data files are formatted as jsonlines. Here is a single example:
 | `person`         |    string  | Person who made the claim                                                                |
 | `venue`          |    string  | Date and venue of the claim                                                              |
 | `url`            |    string  | Politifact url of the claim                                                              |
-| `justification`  |    string  | Justification paragraph write the fact-checkers                                          |
+| `justification`  |    string  | Justification paragraph writen by the fact-checkers                                      |
+| `full_article`   |    string  | Full verification article writen by the fact-checkers                                    |
 | `annotations`    |    List[dict]    | Annotation of our decomposed questions                                             |
 
 Each `annotation` is formatted as follows:
@@ -75,6 +76,7 @@ Each `annotation` is formatted as follows:
 
 
 ## Question Generator
+Coming soon ...
 
 ## Contact 
 
