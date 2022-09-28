@@ -73,7 +73,8 @@ Each `annotation` is formatted as follows:
 | `statements`        |  List[string]  | Statements converted from the yes-no questions                                   |
 | `statements_negate` |  List[string]  | Negated statements    |
 
-
+## Running NLI models
+To run the three NLI models -- `NQ-NLI`, `Doc-NLI`, `MNLI` trained in our paper, simply run `bash scripts/run_nli_models.sh`. You will need to install `allennlp==2.7.0` and `torch==1.9.0`. Check `scripts/run_nli_models.sh` for details about where the models are downloaded and how to switch models. 
 
 ## Question Generator
 Coming soon ...
