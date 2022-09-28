@@ -3,3 +3,5 @@ pandas
 beautifulsoup4
 argparse
 requests
+allennlp==2.7
+torch==1.9.0
