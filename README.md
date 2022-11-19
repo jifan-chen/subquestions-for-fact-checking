@@ -24,7 +24,7 @@ Install the dependencies by running
 ## Datasets
 
 To download the dataset, simply run `bash scripts/download_data.sh`
-The data files are located under `./ClaimDecomp`.
+The data files are located under `./ClaimDecomp`. Note that the downloaded data doesn't contains the justification paragraph and the full article written by the fact-checkers. To get the two fields, you will need to scrape from Politifact using `reconstruct_dataset.py` which is by default included in `download_data.sh`. As the urls may become invalid over time, **you can email us for the full dataset**. You can also find our annotated liter/implied questions via this [spreadsheet](https://docs.google.com/spreadsheets/d/1g6bmuc1D5jbLE0U9Y68MZWH_VCr6ZXfeKA2muA1uJD0/edit#gid=0).
 
 - `train.jsonl` contains 800 unique claims paired with the decomposed questions.
 - `dev.jsonl` contains 200 unique claims paired with the decomposed questions.
@@ -59,8 +59,8 @@ The data files are formatted as jsonlines. Here is a single example:
 | `person`         |    string  | Person who made the claim                                                                |
 | `venue`          |    string  | Date and venue of the claim                                                              |
 | `url`            |    string  | Politifact url of the claim                                                              |
-| `justification`  |    string  | Justification paragraph writen by the fact-checkers                                      |
-| `full_article`   |    string  | Full verification article writen by the fact-checkers                                    |
+| `justification`  |    List[string]  | Justification paragraph writen by the fact-checkers                                      |
+| `full_article`   |    List[string]  | Full verification article writen by the fact-checkers                                    |
 | `annotations`    |    List[dict]    | Annotation of our decomposed questions                                             |
 
 Each `annotation` is formatted as follows:

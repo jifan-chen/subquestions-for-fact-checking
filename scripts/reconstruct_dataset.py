@@ -6,26 +6,31 @@ import argparse
 from bs4 import BeautifulSoup, Tag, NavigableString
 from tqdm import tqdm
 
-RULINGS = ['true', 'mostly-true', 'half-true', 'barely-true', 'false', 'pants-fire']
-RULINGS_IN_TEXT = ['true', 'mostly true', 'half true', 'mostly false', 'false', 'pants on fire', 'barely true']
+RULINGS = ['true', 'mostly-true', 'half-true', 'barely-true', 'false',
+           'pants-fire']
+RULINGS_IN_TEXT = ['true', 'mostly true', 'half true', 'mostly false', 'false',
+                   'pants on fire', 'barely true']
 RULING_SEC_PATTERN = "Our [R,r][uling,ating]"
 
 
-def extract_all_paragraphs(start_node):
-    node = start_node
-    finder = re.compile(RULING_SEC_PATTERN)
+def extract_all_paragraphs(paras):
     evidence = []
-    while node is not None and not finder.match(node.get_text(strip=True)):
-        child_num = len(node.find_all())
-        # no child other than hyperlinks
-        if node.name == 'table' or (node.name == 'div' and child_num >= 2):
-            pass
-        else:
-            text = node.text.strip()
-            if text:
-                evidence.append(text)
-        node = get_sibling(node)
-    return '\n'.join(evidence)
+    for para in paras:
+        if para is not None \
+                and not isinstance(NavigableString, NavigableString) \
+                and not para == '\n':
+            child_num = len(para.find_all())
+            # no child other than hyperlinks
+            if para.name == 'table' or (para.name == 'div' and child_num >= 2):
+                pass
+            else:
+                text = para.get_text(strip=True)
+                if text:
+                    evidence.append(unicodedata.normalize(
+                        "NFKC",
+                        text)
+                    )
+    return evidence
 
 
 def get_sibling(element):
@@ -44,46 +49,58 @@ def main(args):
         r = requests.get(page_url)
         soup = BeautifulSoup(r.text, 'html.parser')
         name = soup.find(attrs={"class": "m-statement__name"})
-        # find when & where
-        time_venue = soup.find('div', attrs={"class": "m-statement__desc"})
         # find content
         claim = soup.find('div', attrs={"class": "m-statement__quote"})
         # find the full article
         full_article = soup.find('article', attrs={"class": 'm-textblock'})
-        if not (name and time_venue and full_article and claim):
-            return
+        # find when & where
         time_venue = soup.find('div', attrs={"class": "m-statement__desc"})
         time_venue = time_venue.get_text(strip=True)
         name = name.get_text(strip=True)
         claim = claim.get_text(strip=True)
-        first_para = full_article.find('p')
-        # print(name)
-        # print(time_venue)
-        # print(claim)
-        # print(full_article)
-        full_article = extract_all_paragraphs(first_para)
-        anchor = soup.find('div', text=re.compile(RULING_SEC_PATTERN))
+        paras = full_article.find_all('p')
+        full_article, ruling = extract_all_paragraphs(paras)
+        anchor = soup.find('div', text=re.compile(RULING_SEC_PATTERN),
+                           recursive=True)
+
         if not anchor:
-            anchor = soup.find('strong', text=re.compile(RULING_SEC_PATTERN))
+            anchor = soup.find('strong', text=re.compile(RULING_SEC_PATTERN),
+                               recursive=True)
         if not anchor:
-            return
-        if not anchor.next_sibling:
+            anchor = soup.find('p', text=re.compile(RULING_SEC_PATTERN),
+                               recursive=True)
+        while get_sibling(anchor) is None or get_sibling(anchor) == '\n':
             anchor = anchor.parent
-        # print(anchor)
-        assert name and claim and time_venue and full_article
         justification_para = []
         anchor = get_sibling(anchor)
         while isinstance(anchor, Tag):
-            anchor_text = anchor.text.strip()
-            if anchor.name == 'p' and anchor_text:
-                justification_para.append(unicodedata.normalize(
-                    "NFKC",
-                    anchor.get_text(strip=True)
+            if not anchor.find('p') and not anchor.name == 'p':
+                anchor = get_sibling(anchor)
+                continue
+            paras = anchor.find_all('p')
+            if not paras:
+                paras = [anchor]
+            for para in paras:
+                if para is not None \
+                        and not isinstance(NavigableString, NavigableString) \
+                        and not para == '\n':
+                    justification_para.append(unicodedata.normalize(
+                        "NFKC",
+                        para.get_text(strip=True)
                     )
-                )
+                    )
             anchor = get_sibling(anchor)
+
+        while justification_para[-1] != full_article[-1]:
+            justification_para.pop()
+        for i in range(len(justification_para)):
+            full_article.pop()
+
+        assert claim
+        assert name
+        assert time_venue
+        assert full_article
         assert justification_para
-        justification_para = "\n".join(justification_para)
         row['claim'] = claim
         row['person'] = name
         row['venue'] = time_venue
